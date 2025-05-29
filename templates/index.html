@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title id="pageTitle">SOCKS5 Proxy Checker | NB Group</title>
+  <style>
+    body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; margin: 0; padding: 20px; }
+    .container { max-width: 650px; margin: auto; background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h2 { color: #343a40; margin-bottom: 10px; }
+    textarea { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #ced4da; border-radius: 4px; resize: vertical; }
+    button { background-color: #198754; color: white; padding: 10px 20px; border: none; margin-top: 10px; margin-right: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    button:hover { background-color: #157347; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { text-align: left; padding: 10px; border: 1px solid #dee2e6; }
+    th { background-color: #e9ecef; }
+    .status-working { color: green; font-weight: bold; }
+    .status-failed { color: red; font-weight: bold; }
+    #summary { margin-top: 20px; font-size: 16px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div style="text-align: right; margin-top: 10px;">
+      <label for="langSelect">🌐 Language:</label>
+      <select id="langSelect" onchange="switchLanguage(this.value)">
+          <option value="en" selected>English</option>
+          <option value="zh">中文</option>
+      </select>
+  </div>
+  <script>
+    function switchLanguage(lang) {
+      // Update text display
+      document.querySelectorAll('[data-lang="en"]').forEach(el => el.style.display = lang === 'en' ? 'inline' : 'none');
+      document.querySelectorAll('[data-lang="zh"]').forEach(el => el.style.display = lang === 'zh' ? 'inline' : 'none');
+      // Update page title
+      const title = lang === 'zh' ? 'SOCKS5代理检查器 | NB团队' : 'SOCKS5 Proxy Checker | NB Group';
+      document.title = title;
+    }
+    window.onload = () => switchLanguage("en");
+  </script>
+  <div class="container">
+    <h2><span data-lang="en">SOCKS5 Proxy Checker | NB Group</span><span data-lang="zh" style="display:none;">SOCKS5代理检查器 | NB团队</span></h2>
+    <p>
+      <span data-lang="en">Enter proxies in the format:</span>
+      <span data-lang="zh" style="display:none;">请输入代理格式：</span>
+      <code>IP:PORT:USER:PASS</code>
+      <span data-lang="en">(one per line)</span>
+      <span data-lang="zh" style="display:none;">(每行一个)</span>
+    </p>
+    <textarea id="proxyList" rows="8"
+      placeholder="e.g., 1.2.3.4:1080:user:pass | 例如: 1.2.3.4:1080:user:pass"></textarea>
+    <button onclick="checkProxies()">
+      <span data-lang="en">Check Proxies</span><span data-lang="zh" style="display:none;">检查代理</span>
+    </button>
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th><span data-lang="en">Proxy</span><span data-lang="zh" style="display:none;">代理</span></th>
+          <th><span data-lang="en">Status</span><span data-lang="zh" style="display:none;">状态</span></th>
+          <th><span data-lang="en">Response Time (ms)</span><span data-lang="zh" style="display:none;">响应时间 (毫秒)</span></th>
+          <th><span data-lang="en">Location</span><span data-lang="zh" style="display:none;">地理位置</span></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div id="summary"></div>
+    <button onclick="downloadResults('valid')">
+      <span data-lang="en">Download Valid IPs</span><span data-lang="zh" style="display:none;">下载有效IP</span>
+    </button>
+    <button onclick="downloadResults('invalid')">
+      <span data-lang="en">Download Invalid IPs</span><span data-lang="zh" style="display:none;">下载无效IP</span>
+    </button>
+  </div>
+  <script>
+    let validProxies = [], invalidProxies = [];
+    async function checkProxies() {
+      validProxies = []; invalidProxies = [];
+      const proxyArray = document.getElementById('proxyList').value.trim().split('\n');
+      const tbody = document.querySelector('#resultsTable tbody');
+      tbody.innerHTML = '';
+      for (let proxy of proxyArray) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${proxy}</td>
+          <td>
+            <span data-lang="en">Checking...</span>
+            <span data-lang="zh" style="display:none;">检查中...</span>
+          </td>
+          <td>-</td>
+          <td>-</td>`;
+        tbody.appendChild(row);
+        try {
+          const res = await fetch('/check_proxy', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({proxy})
+          });
+          const data = await res.json();
+          const cls = data.status.includes('🟢') ? 'status-working' : 'status-failed';
+          row.innerHTML = `<td>${proxy}</td><td class="${cls}">${data.status}</td><td>${data.time}</td><td>${data.location || 'Unknown'}</td>`;
+          data.status.includes('🟢') ? validProxies.push(proxy) : invalidProxies.push(proxy);
+        } catch {
+          row.innerHTML = `<td>${proxy}</td><td class="status-failed"><span data-lang="en">Error</span><span data-lang="zh" style="display:none;">错误</span></td><td>-</td><td>Unknown</td>`;
+          invalidProxies.push(proxy);
+        }
+      }
+      const lang = document.getElementById('langSelect').value;
+      document.getElementById('summary').innerText = lang === 'zh'
+        ? `✅ 有效: ${validProxies.length} | ❌ 无效: ${invalidProxies.length}`
+        : `✅ Valid: ${validProxies.length} | ❌ Invalid: ${invalidProxies.length}`;
+    }
+    function downloadResults(type) {
+      const data = (type==='valid'?validProxies:invalidProxies).join('\n');
+      const blob = new Blob([data], {type:'text/plain'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${type}_proxies.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</body>
+</html>
