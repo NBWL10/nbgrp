@@ -1,156 +1,266 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title id="pageTitle">📇 Contact Generator | NB Group</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Generator | Abhi V1.1</title>
   <style>
     body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: #f8f9fa;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f1f3f5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      color: #303030;
     }
-    .container {
-      max-width: 650px;
-      margin: auto;
-      background: #ffffff;
-      padding: 30px;
+    .wrapper {
+      background: #fff;
+      width: 100%;
+      max-width: 520px;
+      margin: 40px 20px;
+      padding: 20px 24px;
       border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
-    h2 { color: #343a40; margin-bottom: 10px; }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     textarea {
       width: 100%;
+      height: 120px;
       padding: 10px;
-      font-size: 14px;
-      border: 1px solid #ced4da;
+      font-size: 0.95rem;
+      border: 1px solid #ccc;
       border-radius: 4px;
       resize: vertical;
-      margin-top: 10px;
+      box-sizing: border-box;
     }
-    button {
-      background-color: #198754;
-      color: white;
-      padding: 10px 20px;
+    .btn {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 10px 18px;
+      background-color: #28a745;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.95rem;
       border: none;
-      margin-top: 15px;
       border-radius: 4px;
       cursor: pointer;
-      font-weight: bold;
+      transition: background-color 0.2s ease;
     }
-    button:hover { background-color: #157347; }
-    ul {
+    .btn:hover {
+      background-color: #218838;
+    }
+    .contact-list {
       list-style: none;
       padding: 0;
+      margin: 20px 0 0;
+    }
+    .contact-item {
+      padding: 12px 0;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .contact-info {
+      flex: 1;
+      min-width: 180px;
+    }
+    .contact-phone,
+    .contact-dob {
+      color: #555;
+      font-size: 0.9rem;
+    }
+    .contact-email {
+      color: #333;
+      font-size: 0.9rem;
+    }
+    .download-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
       margin-top: 20px;
-      text-align: left;
     }
-    li {
-      margin-bottom: 6px;
-      padding: 5px 0;
-      border-bottom: 1px solid #eee;
+    .download-buttons .btn-secondary {
+      background-color: #6c757d;
     }
-    .name {
-      font-weight: 600;
-    }
-    .download {
-      display: inline-block;
-      margin-top: 15px;
-      text-decoration: none;
-      color: #fff;
-      background: #0d6efd;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-size: 14px;
-      margin-right: 10px;
+    .download-buttons .btn-secondary:hover {
+      background-color: #5a6268;
     }
   </style>
 </head>
 <body>
-  <div style="text-align: right; margin-top: 10px;">
-    <label for="langSelect">🌐 Language:</label>
-    <select id="langSelect" onchange="switchLanguage(this.value)">
-        <option value="en" selected>English</option>
-        <option value="zh">中文</option>
-    </select>
+  <div class="wrapper">
+    <h1>📇 Contact Generator | Abhi V1.1</h1>
+    <textarea id="inputData" placeholder="Enter phone numbers, one per line..."></textarea>
+    <button id="generateBtn" class="btn">Generate</button>
+    <ul id="contactList" class="contact-list"></ul>
+    <div class="download-buttons">
+      <button id="downloadVcf" class="btn">Download VCF</button>
+      <button id="downloadTxt" class="btn btn-secondary">Download TXT</button>
+    </div>
   </div>
 
   <script>
-    function switchLanguage(lang) {
-      document.querySelectorAll('[data-lang="en"]').forEach(el => el.style.display = lang === 'en' ? 'inline' : 'none');
-      document.querySelectorAll('[data-lang="zh"]').forEach(el => el.style.display = lang === 'zh' ? 'inline' : 'none');
-      document.title = lang === 'zh' ? '📇 联系人生成器 | NB团队' : '📇 Contact Generator | NB Group';
+    let contactsGlobal = [];
+
+    // Fetch both name and dob from randomuser.me
+    async function fetchUserData(count) {
+      const res = await fetch(`https://randomuser.me/api/?results=${count}&nat=us&inc=name,dob`);
+      const data = await res.json();
+      return data.results.map(u => ({
+        name: `${u.name.first.charAt(0).toUpperCase() + u.name.first.slice(1)} ${u.name.last.charAt(0).toUpperCase() + u.name.last.slice(1)}`,
+        dob: u.dob.date
+      }));
     }
-    window.onload = () => { switchLanguage("en"); 
-    // Auto-expand textareas
-    document.querySelectorAll('textarea').forEach(textarea => {
-      textarea.addEventListener("input", function() {
-        this.style.height = "auto";
-        this.style.height = (this.scrollHeight) + "px";
-      });
-    });
- };
-  </script>
 
-  <div class="container">
-    <h2>
-      <span data-lang="en">📇 Contact Generator | V.1.0</span>
-      <span data-lang="zh" style="display:none;">📇 联系人生成器 | V.1.0</span>
-    </h2>
-    <textarea id="numbers" placeholder="Enter phone numbers, one per line..." data-lang="en"></textarea>
-    <textarea id="numbers_zh" placeholder="请输入电话号码，每行一个..." data-lang="zh" style="display:none;"></textarea>
-    <button onclick="generateVCF()">
-      <span data-lang="en">Generate</span>
-      <span data-lang="zh" style="display:none;">生成</span>
-    </button>
-    <ul id="results"></ul>
-    <a id="downloadVCF" class="download" style="display:none">Download VCF</a>
-    <a id="downloadTXT" class="download" style="display:none; background: #6c757d">Download TXT</a>
-  </div>
-
-  <script>
-    const names = [
-      "Zayla Lewis", "Jordan Mitchell", "Kaleb Brooks", "Reign Rhodes", "Dante Green"
-    ];
-
-    function generateVCF() {
-      const input = document.getElementById("langSelect").value === "zh"
-                    ? document.getElementById("numbers_zh")
-                    : document.getElementById("numbers");
-      const nums = input.value.trim().split(/\n+/);
-      const used = new Set();
-      let vcf = "", txt = "", list = "";
-
-      nums.forEach(num => {
-        let name;
-        do {
-          name = names[Math.floor(Math.random() * names.length)];
-        } while (used.has(name));
-        used.add(name);
-        vcf += `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL;TYPE=CELL:${num}\nEND:VCARD\n\n`;
-        txt += `${name} — ${num}\n`;
-        list += `<li><span class='name'>${name}</span> — ${num}</li>`;
-      });
-
-      document.getElementById("results").innerHTML = list;
-
-      const vcfBlob = new Blob([vcf], {type: "text/vcard"});
-      const txtBlob = new Blob([txt], {type: "text/plain"});
-      const vcfUrl = URL.createObjectURL(vcfBlob);
-      const txtUrl = URL.createObjectURL(txtBlob);
-
-      const vcfLink = document.getElementById("downloadVCF");
-      vcfLink.href = vcfUrl;
-      vcfLink.download = "contacts.vcf";
-      vcfLink.style.display = "inline-block";
-
-      const txtLink = document.getElementById("downloadTXT");
-      txtLink.href = txtUrl;
-      txtLink.download = "contacts.txt";
-      txtLink.style.display = "inline-block";
+    // Generate a random US email (no example.com)
+    function generateEmail(name) {
+      const domains = ['gmail.com','yahoo.com','outlook.com','hotmail.com','live.com'];
+      const key = name.toLowerCase().replace(/[^a-z]/g,'');
+      return `${key}${Math.floor(Math.random()*900+100)}@${domains[Math.floor(Math.random()*domains.length)]}`;
     }
+
+    // The emojis you provided
+    const emojis = ['😀','🤪','👍','😊','🥰','✨','😉','😘','😎','🥵','🥰🥰🥰','🤮','😙😙'];
+
+    // Main generate logic
+    async function generateVCF() {
+      const input = document.getElementById('inputData').value
+        .split('\n')
+        .map(s => s.trim())
+        .filter(Boolean);
+      if (!input.length) return;
+
+      const userData = await fetchUserData(input.length);
+
+      // 20% emojis
+      const emojiCount = Math.ceil(input.length * 0.2);
+      const emojiIdx = new Set();
+      while (emojiIdx.size < emojiCount) {
+        emojiIdx.add(Math.floor(Math.random() * input.length));
+      }
+
+      // 70% emails
+      const emailCount = Math.floor(input.length * 0.7);
+      const emailIdx = new Set();
+      while (emailIdx.size < emailCount) {
+        emailIdx.add(Math.floor(Math.random() * input.length));
+      }
+
+      // 30% DOBs
+      const dobCount = Math.floor(input.length * 0.3);
+      const dobIdx = new Set();
+      while (dobIdx.size < dobCount) {
+        dobIdx.add(Math.floor(Math.random() * input.length));
+      }
+
+      const contacts = input.map((phone, i) => {
+        let displayName = userData[i].name;
+        if (emojiIdx.has(i)) {
+          displayName += emojis[Math.floor(Math.random() * emojis.length)];
+        }
+        return {
+          name: displayName,
+          phone,
+          email: emailIdx.has(i) ? generateEmail(userData[i].name) : null,
+          dob: dobIdx.has(i) ? userData[i].dob : null
+        };
+      });
+
+      contactsGlobal = contacts;
+
+      // Render list
+      const listEl = document.getElementById('contactList');
+      listEl.innerHTML = '';
+      contacts.forEach(c => {
+        let html = `
+          <div class="contact-info">
+            <strong>${c.name}</strong><br>
+            <span class="contact-phone">${c.phone}</span>
+          </div>`;
+        if (c.email) html += `<div class="contact-email">${c.email}</div>`;
+        if (c.dob) {
+          const d = new Date(c.dob);
+          const y = d.getFullYear().toString().padStart(4,'0');
+          const m = (d.getMonth()+1).toString().padStart(2,'0');
+          const day = d.getDate().toString().padStart(2,'0');
+          html += `<div class="contact-dob">DOB: ${y}-${m}-${day}</div>`;
+        }
+        const li = document.createElement('li');
+        li.className = 'contact-item';
+        li.innerHTML = html;
+        listEl.appendChild(li);
+      });
+    }
+
+    // VCF download
+    function downloadVCF() {
+      if (!contactsGlobal.length) return;
+      let vcf = '';
+      contactsGlobal.forEach(c => {
+        vcf += 'BEGIN:VCARD\r\nVERSION:3.0\r\n';
+        vcf += `FN:${c.name}\r\n`;
+        vcf += `TEL;TYPE=CELL:${c.phone}\r\n`;
+        if (c.email) vcf += `EMAIL;TYPE=INTERNET:${c.email}\r\n`;
+        if (c.dob) {
+          const d = new Date(c.dob);
+          const y = d.getFullYear().toString().padStart(4,'0');
+          const m = (d.getMonth()+1).toString().padStart(2,'0');
+          const day = d.getDate().toString().padStart(2,'0');
+          vcf += `BDAY:${y}${m}${day}\r\n`;
+        }
+        vcf += 'END:VCARD\r\n';
+      });
+      const blob = new Blob([vcf], { type: 'text/vcard;charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'contacts.vcf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // TXT download
+    function downloadTXT() {
+      if (!contactsGlobal.length) return;
+      let txt = '';
+      contactsGlobal.forEach(c => {
+        let line = `${c.name} - ${c.phone}`;
+        if (c.email) line += ` - ${c.email}`;
+        if (c.dob) {
+          const d = new Date(c.dob);
+          const y = d.getFullYear().toString().padStart(4,'0');
+          const m = (d.getMonth()+1).toString().padStart(2,'0');
+          const day = d.getDate().toString().padStart(2,'0');
+          line += ` - DOB: ${y}-${m}-${day}`;
+        }
+        txt += line + '\n';
+      });
+      const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'contacts.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', generateVCF);
+    document.getElementById('downloadVcf').addEventListener('click', downloadVCF);
+    document.getElementById('downloadTxt').addEventListener('click', downloadTXT);
   </script>
 </body>
 </html>
