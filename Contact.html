@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title id="pageTitle">📇 Contact Generator | NB Group</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 650px;
+      margin: auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h2 { color: #343a40; margin-bottom: 10px; }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      resize: vertical;
+      margin-top: 10px;
+    }
+    button {
+      background-color: #198754;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      margin-top: 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background-color: #157347; }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+      text-align: left;
+    }
+    li {
+      margin-bottom: 6px;
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .name {
+      font-weight: 600;
+    }
+    .download {
+      display: inline-block;
+      margin-top: 15px;
+      text-decoration: none;
+      color: #fff;
+      background: #0d6efd;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align: right; margin-top: 10px;">
+    <label for="langSelect">🌐 Language:</label>
+    <select id="langSelect" onchange="switchLanguage(this.value)">
+        <option value="en" selected>English</option>
+        <option value="zh">中文</option>
+    </select>
+  </div>
+
+  <script>
+    function switchLanguage(lang) {
+      document.querySelectorAll('[data-lang="en"]').forEach(el => el.style.display = lang === 'en' ? 'inline' : 'none');
+      document.querySelectorAll('[data-lang="zh"]').forEach(el => el.style.display = lang === 'zh' ? 'inline' : 'none');
+      document.title = lang === 'zh' ? '📇 联系人生成器 | NB团队' : '📇 Contact Generator | NB Group';
+    }
+    window.onload = () => { switchLanguage("en"); 
+    // Auto-expand textareas
+    document.querySelectorAll('textarea').forEach(textarea => {
+      textarea.addEventListener("input", function() {
+        this.style.height = "auto";
+        this.style.height = (this.scrollHeight) + "px";
+      });
+    });
+ };
+  </script>
+
+  <div class="container">
+    <h2>
+      <span data-lang="en">📇 Contact Generator | V.1.0</span>
+      <span data-lang="zh" style="display:none;">📇 联系人生成器 | V.1.0</span>
+    </h2>
+    <textarea id="numbers" placeholder="Enter phone numbers, one per line..." data-lang="en"></textarea>
+    <textarea id="numbers_zh" placeholder="请输入电话号码，每行一个..." data-lang="zh" style="display:none;"></textarea>
+    <button onclick="generateVCF()">
+      <span data-lang="en">Generate</span>
+      <span data-lang="zh" style="display:none;">生成</span>
+    </button>
+    <ul id="results"></ul>
+    <a id="downloadVCF" class="download" style="display:none">Download VCF</a>
+    <a id="downloadTXT" class="download" style="display:none; background: #6c757d">Download TXT</a>
+  </div>
+
+  <script>
+    const names = [
+      "Zayla Lewis", "Jordan Mitchell", "Kaleb Brooks", "Reign Rhodes", "Dante Green"
+    ];
+
+    function generateVCF() {
+      const input = document.getElementById("langSelect").value === "zh"
+                    ? document.getElementById("numbers_zh")
+                    : document.getElementById("numbers");
+      const nums = input.value.trim().split(/\n+/);
+      const used = new Set();
+      let vcf = "", txt = "", list = "";
+
+      nums.forEach(num => {
+        let name;
+        do {
+          name = names[Math.floor(Math.random() * names.length)];
+        } while (used.has(name));
+        used.add(name);
+        vcf += `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL;TYPE=CELL:${num}\nEND:VCARD\n\n`;
+        txt += `${name} — ${num}\n`;
+        list += `<li><span class='name'>${name}</span> — ${num}</li>`;
+      });
+
+      document.getElementById("results").innerHTML = list;
+
+      const vcfBlob = new Blob([vcf], {type: "text/vcard"});
+      const txtBlob = new Blob([txt], {type: "text/plain"});
+      const vcfUrl = URL.createObjectURL(vcfBlob);
+      const txtUrl = URL.createObjectURL(txtBlob);
+
+      const vcfLink = document.getElementById("downloadVCF");
+      vcfLink.href = vcfUrl;
+      vcfLink.download = "contacts.vcf";
+      vcfLink.style.display = "inline-block";
+
+      const txtLink = document.getElementById("downloadTXT");
+      txtLink.href = txtUrl;
+      txtLink.download = "contacts.txt";
+      txtLink.style.display = "inline-block";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IP Format Converter | NB Group</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 650px;
+      margin: auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #343a40;
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-family: monospace;
+      box-sizing: border-box;
+    }
+    #input {
+      resize: vertical;
+      max-height: 300px;
+      overflow-y: auto;
+      min-height: 100px;
+    }
+    #output {
+      resize: vertical;
+      min-height: 100px;
+    }
+    button {
+      background-color: #198754;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      margin-top: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #157347;
+    }
+    #count {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="text-align: right; margin-bottom: 10px;">
+      <label for="langSelect">🌐 Language:</label>
+      <select id="langSelect" onchange="switchLanguage(this.value)">
+        <option value="en" selected>English</option>
+        <option value="zh">中文</option>
+      </select>
+    </div>
+    <h2>
+      <span data-lang="en">🧮 Convert Proxy IPs to socks5 Format</span>
+      <span data-lang="zh" style="display:none;">🧮 将代理 IP 转换为 socks5 格式</span>
+    </h2>
+    <label for="input">
+      <span data-lang="en">Enter your proxies (one per line):</span>
+      <span data-lang="zh" style="display:none;">请输入代理（每行一个）:</span>
+    </label>
+    <textarea id="input" placeholder="e.g. 156.237.47.10:6407:jsjt888999:jsjt888999"></textarea>
+    <button onclick="convertIPs()">
+      <span data-lang="en">Convert</span>
+      <span data-lang="zh" style="display:none;">转换</span>
+    </button>
+    <h3>
+      <span data-lang="en">Converted Output:</span>
+      <span data-lang="zh" style="display:none;">转换后的结果:</span>
+    </h3>
+    <textarea id="output" readonly></textarea>
+    <div style="margin-top: 10px;">
+      <p id="count"></p>
+      <button onclick="copyOutput()" style="margin-top: 5px;">
+        <span data-lang="en">📋 Copy Output</span>
+        <span data-lang="zh" style="display:none;">📋 复制结果</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function switchLanguage(lang) {
+      document.querySelectorAll('[data-lang="en"]').forEach(el => el.style.display = lang === 'en' ? 'inline' : 'none');
+      document.querySelectorAll('[data-lang="zh"]').forEach(el => el.style.display = lang === 'zh' ? 'inline' : 'none');
+      document.title = lang === 'zh' ? 'IP格式转换器 | NB团队' : 'IP Format Converter | NB Group';
+    }
+
+    function convertIPs() {
+      const input = document.getElementById("input").value.trim().split('\n');
+      let validCount = 0;
+      const output = input.map(line => {
+        const match = line.match(/(\d+\.\d+\.\d+\.\d+):(\d+):([^:]+):([^\s]+)/);
+        if (match) {
+          validCount++;
+          const [, ip, port, user, pass] = match;
+          return `socks5://${user}:${pass}@${ip}:${port}/`;
+        } else {
+          return `INVALID LINE: ${line}`;
+        }
+      }).join('\n');
+      const lang = document.getElementById("langSelect").value;
+      document.getElementById("output").value = output;
+      document.getElementById("count").innerText =
+        lang === 'zh'
+          ? `📊 粘贴的总行数: ${input.length}, 有效 IP 数: ${validCount}`
+          : `📊 Total lines pasted: ${input.length}, Valid IPs: ${validCount}`;
+    }
+
+    function copyOutput() {
+      const output = document.getElementById("output");
+      output.select();
+      document.execCommand("copy");
+    }
+
+    window.onload = () => {
+      switchLanguage("en");
+    };
+  </script>
+</body>
+</html>

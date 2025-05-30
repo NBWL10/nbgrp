@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NB Group Tools</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, sans-serif;
+      background-color: #0e1a3f;
+      color: #ffffff;
+      text-align: center;
+    }
+    .header {
+      padding: 40px 20px 10px;
+    }
+    .logo-wrapper {
+      display: inline-block;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .header img {
+      width: 80px;
+      height: 80px;
+      display: block;
+    }
+    .header h1 {
+      margin: 15px 0 0;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      color: #ffffff;
+    }
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin: 20px;
+    }
+    .tool-button {
+      background-color: #2159bd;
+      border: none;
+      color: white;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .tool-button:hover {
+      background-color: #3a75d1;
+    }
+    #tool-container {
+      width: 90%;
+      max-width: 960px;
+      margin: 0 auto 40px;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      color: #000;
+      /* Allow dynamic height based on content */
+      padding: 20px;
+    }
+    #tool-frame {
+      width: 100%;
+      height: 600px;
+      border: none;
+      display: none;
+    }
+    #placeholder {
+      color: #333;
+      font-size: 1.2rem;
+      padding: 60px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo-wrapper">
+      <img src="logo.png" alt="NB Group Tools Logo">
+    </div>
+    <h1>NB Group Tools</h1>
+  </div>
+
+  <div class="button-container">
+    <button class="tool-button" onclick="loadTool('Contact.html')">Contact Generator</button>
+    <button class="tool-button" onclick="loadTool('Socks5 Convert.html')">IP Format Converter</button>
+    <button class="tool-button" onclick="loadTool('https://nbgrp.onrender.com/')">Socks5 Checker</button>
+    <button class="tool-button" onclick="loadTool('tool3.html')">Tool 3</button>
+    <button class="tool-button" onclick="loadTool('tool4.html')">Tool 4</button>
+    <button class="tool-button" onclick="loadTool('tool5.html')">Tool 5</button>
+  </div>
+
+  <div id="tool-container">
+    <div id="placeholder">Select a tool above to get started</div>
+    <iframe id="tool-frame"></iframe>
+  </div>
+
+  <script>
+    function loadTool(page) {
+      const iframe = document.getElementById('tool-frame');
+      const placeholder = document.getElementById('placeholder');
+      iframe.src = page;
+      iframe.style.display = 'block';
+      iframe.style.height = '600px';
+      placeholder.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
