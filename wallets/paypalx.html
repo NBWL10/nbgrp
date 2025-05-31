@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cash App Full Tutorial</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f7fa;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 960px;
+      margin: auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      overflow: hidden;
+    }
+    .device-view, .wizard-card {
+      flex: 1;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    /* This container will receive one or two <img> tags dynamically */
+    #step-img-container img {
+      width: 240px;
+      border-radius: 20px;
+      border: 8px solid #333;
+      margin-bottom: 1rem;
+    }
+    .wizard-header {
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+    }
+    .step-text {
+      font-size: 1rem;
+      color: #444;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .navigation {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 2rem;
+    }
+    .arrow {
+      font-size: 2rem;
+      cursor: pointer;
+      color: #555;
+      user-select: none;
+    }
+    .arrow.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- LEFT PANEL: will be populated by JavaScript -->
+    <div class="device-view">
+      <div id="step-img-container"></div>
+    </div>
+
+    <!-- RIGHT PANEL: step title, text, arrows -->
+    <div class="wizard-card">
+      <div id="step-title" class="wizard-header">Step 1 of 19</div>
+      <div id="step-text" class="step-text">
+        This is the Cash App home screen. Once the client confirms they have it, send them the screenshot of the home screen and guide them to begin the account verification process.
+      </div>
+      <div class="navigation">
+        <div id="prev" class="arrow">&#x276E;</div>
+        <div id="next" class="arrow">&#x276F;</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------
+    // Steps array: one entry per step (1 through 19)
+    // For Step 9 (index 8), we put two images in the `images` array
+    // All other steps have exactly one `image` string.
+    // ---------------------------------------------------------
+    const steps = [
+      {
+        text: `This is the Cash App home screen. Once the client confirms they have it, send them the screenshot of the home screen and guide them to begin the account verification process.`,
+        image: "images/cashapp-step-1.png"
+      },
+      {
+        text: `Click on the profile icon within Cash App to access the account settings page.`,
+        image: "images/cashapp-step-2.png"
+      },
+      {
+        text: `Once the client sends you a screenshot, instruct them to click on the "Security" option and scroll down. They should then be able to locate a verification option similar to the one shown here.`,
+        image: "images/cashapp-step-3.png"
+      },
+      {
+        text: `If the client’s Cash App is verified (as shown here), guide them back to the home screen and proceed with adding funds. If it displays “Verify,” have the client click it and complete verification first.`,
+        image: "images/cashapp-step-4.png"
+      },
+      {
+        text: `Once the client has successfully verified their Cash App account, direct them back to the home screen and guide them to add funds by selecting “Add Money.”`,
+        image: "images/cashapp-step-5.png"
+      },
+      {
+        text: `After the client has added funds, have them click on the Bitcoin (₿) option and guide them to purchase Bitcoin using their available Cash App balance.`,
+        image: "images/cashapp-step-6.png"
+      },
+      {
+        text: `Once the client selects the Bitcoin option, they will see this screen. Instruct them to click “Buy Bitcoin,” which leads to a page for entering the purchase amount.`,
+        image: "images/cashapp-step-7.png"
+      },
+      {
+        text: `In Cash App, you’ll see these options when purchasing BTC. Tap the three dots (…) to enter a custom amount. Include the transfer fee—Cash App typically requires around $3.60 for a priority transfer. For example, if you need $15, enter about $19 to cover both amount and fee.`,
+        image: "images/cashapp-step-8.png"
+      },
+      // Step 9 is where we supply TWO images:
+      {
+        text: `Click on this area, and you’ll see an option labeled “Send.” Tap on it to proceed to the next page.`,
+        images: [
+          "images/cashapp-step-9.png",
+          
+        ]
+      },
+      {
+        text: `On this page, you can now enter the amount of BTC you wish to send. As mentioned earlier, if you need $15, you'll need to account for fees. You can enter the full amount in your BTC balance, or simply enter $15—the transfer fee will deduct automatically.`,
+        image: "images/cashapp-step-10.png"
+      },
+      {
+        text: `Enter the desired amount, then click “Send.” This brings you to the next part of the transaction.`,
+        image: "images/cashapp-step-11.png"
+      },
+      {
+        text: `After clicking “Send,” you’ll see a page like this where you must paste the recipient’s wallet address. Ask the client to contact Shopthing support for the BTC address.`,
+        image: "images/cashapp-step-12.png"
+      },
+      {
+        text: `Once the client pastes the BTC address in the “To:” field, it will appear. Click on it to confirm, then click “Next.”`,
+        image: "images/cashapp-step-13.png"
+      },
+      {
+        text: `If this is the client’s first BTC transfer via Cash App, they might answer a few verification questions. Have them complete those, choose Priority method, and click “Next.”`,
+        image: "images/cashapp-step-14.png"
+      },
+      {
+        text: `On the next page, the client must confirm the BTC withdrawal. Guide them to click “Confirm & Send” to complete the transaction.`,
+        image: "images/cashapp-step-15.png"
+      },
+      {
+        text: `Once done, the next screen shows a confirmation message that the transaction is complete. At this point, guide the client to retrieve their receipt.`,
+        image: "images/cashapp-step-16.png"
+      },
+      {
+        text: `To access the receipt, have the client return to the Cash App home screen and click the highlighted area shown here. Ask them to screenshot that page and send it to you.`,
+        image: "images/cashapp-step-17.png"
+      },
+      {
+        text: `In the Activity tab, click on the “Bitcoin withdrawal” (or pending) entry, then have the client screenshot that transaction detail page.`,
+        image: "images/cashapp-step-18.png"
+      },
+      {
+        text: `That final screenshot is the official receipt. Ask the client to forward it to customer service for confirmation.`,
+        image: "images/cashapp-step-19.png"
+      }
+    ];
+
+    let current = 0;
+    const stepText = document.getElementById('step-text');
+    const stepTitle = document.getElementById('step-title');
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+
+    function updateStep() {
+      const step = steps[current];
+      const container = document.getElementById('step-img-container');
+      container.innerHTML = "";
+
+      // If `images` array exists, show each image stacked vertically:
+      if (Array.isArray(step.images)) {
+        step.images.forEach(src => {
+          const img = document.createElement('img');
+          img.src = src;
+          container.appendChild(img);
+        });
+      }
+      // Otherwise, show the single `image`:
+      else if (step.image) {
+        const img = document.createElement('img');
+        img.src = step.image;
+        container.appendChild(img);
+      }
+
+      // Render the text (always as plain text, since we did not inject HTML here)
+      stepText.textContent = step.text;
+      // Update the header
+      stepTitle.textContent = `Step ${current + 1} of ${steps.length}`;
+
+      // Enable/disable arrows
+      prev.classList.toggle('disabled', current === 0);
+      next.classList.toggle('disabled', current === steps.length - 1);
+    }
+
+    prev.addEventListener('click', () => {
+      if (current > 0) {
+        current--;
+        updateStep();
+      }
+    });
+    next.addEventListener('click', () => {
+      if (current < steps.length - 1) {
+        current++;
+        updateStep();
+      }
+    });
+
+    // Initialize first step on load
+    updateStep();
+  </script>
+</body>
+</html>
