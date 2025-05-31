@@ -63,7 +63,6 @@
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       color: #000;
-      /* Allow dynamic height based on content */
       padding: 20px;
     }
     #tool-frame {
@@ -77,7 +76,14 @@
       font-size: 1.2rem;
       padding: 60px 0;
     }
-  </style>
+  
+    summary.dropdown-summary::-webkit-details-marker {
+      display: none;
+    }
+    summary.dropdown-summary {
+      list-style: none;
+    }
+</style>
 </head>
 <body>
   <div class="header">
@@ -91,7 +97,29 @@
     <button class="tool-button" onclick="loadTool('Contact.html')">Contact Generator</button>
     <button class="tool-button" onclick="loadTool('Socks5 Convert.html')">IP Format Converter</button>
     <button class="tool-button" onclick="loadTool('https://nbgrp.onrender.com/')">Socks5 Checker</button>
-    <button class="tool-button" onclick="loadTool('tool3.html')">Tool 3</button>
+    
+    <!-- Tool 3 with dropdown -->
+        <button class="tool-button" onclick="loadTool('dynamic/dynamic.html')">Dynamic IP</button>
+<details style="position: relative;">
+      <summary class="tool-button dropdown-summary">Wallets</summary>
+      <div style="
+          position: absolute;
+          top: 100%;
+          left: 0;
+          background: #3a75d1;
+          border-radius: 8px;
+          padding: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        ">
+        <button class="tool-button" onclick="loadTool('wallets/cashapp.html'); document.querySelectorAll('details').forEach(d => d.removeAttribute('open'));">Cash App</button>
+        <button class="tool-button" onclick="loadTool('wallets/paypal.html'); document.querySelectorAll('details').forEach(d => d.removeAttribute('open'));">PayPal</button>
+        <button class="tool-button" onclick="loadTool('wallets/uphold.html'); document.querySelectorAll('details').forEach(d => d.removeAttribute('open'));">Uphold</button>
+        <button class="tool-button" onclick="loadTool('wallets/venmo.html'); document.querySelectorAll('details').forEach(d => d.removeAttribute('open'));">Venmo</button>
+      </div>
+    </details>
+
     <button class="tool-button" onclick="loadTool('tool4.html')">Tool 4</button>
     <button class="tool-button" onclick="loadTool('tool5.html')">Tool 5</button>
   </div>
@@ -107,7 +135,6 @@
       const placeholder = document.getElementById('placeholder');
       iframe.src = page;
       iframe.style.display = 'block';
-      iframe.style.height = '600px';
       placeholder.style.display = 'none';
     }
   </script>
