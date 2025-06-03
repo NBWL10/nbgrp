@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NB Group Tools</title>
@@ -133,7 +136,7 @@
     function loadTool(page) {
       const iframe = document.getElementById('tool-frame');
       const placeholder = document.getElementById('placeholder');
-      iframe.src = page;
+      iframe.src = page + (page.includes('?') ? '&' : '?') + 'v=' + new Date().getTime();
       iframe.style.display = 'block';
       placeholder.style.display = 'none';
     }
