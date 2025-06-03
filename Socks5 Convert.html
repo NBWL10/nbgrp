@@ -5,7 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IP Format Converter | NB Group</title>
-  <style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
     body {
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       background: #f8f9fa;
@@ -91,10 +92,12 @@
     <textarea id="output" readonly></textarea>
     <div style="margin-top: 10px;">
       <p id="count"></p>
-      <button onclick="copyOutput()" style="margin-top: 5px;">
-        <span data-lang="en">📋 Copy Output</span>
-        <span data-lang="zh" style="display:none;">📋 复制结果</span>
-      </button>
+      <div style="margin-top: 20px; display: flex; justify-content: center;">
+        <div id="qrcode"></div>
+    </div>
+      <div style="margin-top: 20px; display: flex; justify-content: center;">
+        <div id="qrcode"></div>
+    </div>
     </div>
   </div>
 
@@ -105,31 +108,43 @@
       document.title = lang === 'zh' ? 'IP格式转换器 | NB团队' : 'IP Format Converter | NB Group';
     }
 
+    
     function convertIPs() {
       const input = document.getElementById("input").value.trim().split('\n');
       let validCount = 0;
-      const output = input.map(line => {
+      const outputLines = [];
+      let lastValid = "";
+
+      input.forEach(line => {
         const match = line.match(/(\d+\.\d+\.\d+\.\d+):(\d+):([^:]+):([^\s]+)/);
         if (match) {
           validCount++;
           const [, ip, port, user, pass] = match;
-          return `socks5://${user}:${pass}@${ip}:${port}/`;
+          const formatted = `socks5://${user}:${pass}@${ip}:${port}/`;
+          outputLines.push(formatted);
+          lastValid = formatted;
         } else {
-          return `INVALID LINE: ${line}`;
+          outputLines.push(`INVALID LINE: ${line}`);
         }
-      }).join('\n');
-      const lang = document.getElementById("langSelect").value;
+      });
+
+      const output = outputLines.join('\n');
       document.getElementById("output").value = output;
+      const lang = document.getElementById("langSelect").value;
       document.getElementById("count").innerText =
         lang === 'zh'
           ? `📊 粘贴的总行数: ${input.length}, 有效 IP 数: ${validCount}`
           : `📊 Total lines pasted: ${input.length}, Valid IPs: ${validCount}`;
-    }
 
-    function copyOutput() {
-      const output = document.getElementById("output");
-      output.select();
-      document.execCommand("copy");
+      const qrDiv = document.getElementById("qrcode");
+      qrDiv.innerHTML = "";
+      if (validCount === 1) {
+        new QRCode(qrDiv, {
+          text: lastValid,
+          width: 280,
+          height: 280
+        });
+      }
     }
 
     window.onload = () => {
