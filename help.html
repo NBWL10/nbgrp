@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帮助请求表单 Help Request Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>帮助请求表单 Help Request Form</h2>
+
+    <label for="idTag">你的ID标签 Your ID Tag:</label>
+    <input type="text" id="idTag" placeholder="请输入你的ID，例如 ZX27 / Enter your ID (e.g. ZX27)" />
+
+    <label for="subject">主题 Subject:</label>
+    <input type="text" id="subject" placeholder="简要主题 / Brief subject" />
+
+    <label for="reason">发生了什么？What’s going on?</label>
+    <textarea id="reason" rows="5" placeholder="描述问题... / Describe the issue..."></textarea>
+
+    <button onclick="sendMessage()">发送 Telegram / Send </button>
+  </div>
+
+  <script>
+    function sendMessage() {
+      const idTag = document.getElementById('idTag').value.trim();
+      const subject = document.getElementById('subject').value.trim();
+      const reason = document.getElementById('reason').value.trim();
+
+      if (!idTag || !subject || !reason) {
+        alert('请填写所有字段 Please fill in all fields.');
+        return;
+      }
+
+      const message = `🆘 *新帮助请求 New Help Request*\n\n🆔 *ID标签 ID Tag:* ${idTag}\n📌 *主题 Subject:* ${subject}\n📝 *原因 Reason:* ${reason}`;
+
+      const token = '7174977604:AAG0ndAhWyS0xleVYvFAHWcZsq9lDNHtPTE'; // Replace with your Bot Token
+      const chatId = '-1002844604699'; // Replace with your Chat ID
+      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+          parse_mode: 'Markdown'
+        })
+      })
+      .then(res => {
+        if (res.ok) {
+          alert('消息发送成功！Message sent successfully!');
+          document.getElementById('idTag').value = '';
+          document.getElementById('subject').value = '';
+          document.getElementById('reason').value = '';
+        } else {
+          alert('消息发送失败 Failed to send message.');
+        }
+      })
+      .catch(() => alert('消息发送失败 Failed to send message.'));
+    }
+  </script>
+</body>
+</html>
