@@ -1,112 +1,276 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>帮助请求表单 Help Request Form</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>帮助请求表单 / Help Request Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f8f9fa;
-    }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-    }
-    input, textarea, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    @media (max-width: 600px) {
-      .container {
-        padding: 15px;
-      }
-    }
+   body {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 100%);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+.container, .leaderboard-container {
+  width: 100%;
+  max-width: 410px;
+  margin: 32px auto 0;
+  background: #fff;
+  padding: 24px 18px 18px 18px;
+  border-radius: 15px;
+  box-shadow: 0 8px 24px rgba(50,60,90,.10);
+}
+@media (max-width: 520px) {
+  .container, .leaderboard-container {
+    max-width: 98vw;
+    margin: 18px auto 0;
+    padding: 12px 4vw 14px 4vw;
+    border-radius: 10px;
+  }
+}
+h2, h3 {
+  text-align: center;
+  color: #334155;
+  margin-bottom: 15px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+label {
+  display: block;
+  margin-top: 14px;
+  font-weight: 600;
+  color: #475569;
+}
+input, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  font-size: 15px;
+  background: #f8fafc;
+  transition: border-color 0.2s;
+  font-family: inherit;
+  color: #2d3748;
+  box-sizing: border-box;
+}
+input:focus, textarea:focus {
+  border-color: #6366f1;
+  outline: none;
+  background: #fff;
+}
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 19px;
+  gap: 10px;
+}
+button {
+  flex: 1;
+  padding: 12px 0;
+  font-weight: 700;
+  border: none;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #6366f1 30%, #3b82f6 100%);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 8px rgba(60,100,255,0.06);
+  transition: background 0.22s, transform 0.15s;
+}
+button:hover {
+  background: linear-gradient(90deg, #6366f1 60%, #1e40af 100%);
+  transform: translateY(-1px) scale(1.015);
+}
+.leaderboard-container {
+  margin-top: 28px;
+  background: #f9fafb;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(60,60,60,.05);
+  padding: 16px 10px 10px 10px;
+}
+ul#leaderboardList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+ul#leaderboardList li {
+  background: #e0e7ff;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  border-radius: 7px;
+  font-size: 15px;
+  color: #2d3a4a;
+  border: 1px solid #dbeafe;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 36px;
+}
+ul#leaderboardList li span.star {
+  font-size: 17px;
+  font-weight: bold;
+  color: #fbbf24;
+  margin-right: 7px;
+}
+ul#leaderboardList li .name {
+  flex: 1 1 auto;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ul#leaderboardList li .score {
+  flex: 0 0 auto;
+  font-family: 'Consolas', 'Menlo', 'Courier New', monospace;
+  font-weight: bold;
+  color: #6366f1;
+  font-size: 15.8px;
+  letter-spacing: 1px;
+}
+.footer {
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 22px 0 6px 0;
+}
+iframe[name="hidden_iframe"] {
+  display: none;
+}
+
   </style>
 </head>
 <body>
+
+  <!-- Hidden form for Google Sheets (Solved only) -->
+  <form id="solverForm"
+        action="https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgZs7jHhp9pK16mVxeEzYHbAx6m3gckL500z2K16ROPO9yipuADtrcdDfx-3acBUqpYRGwj9yEjESobeHodYiHS_6Qpt-pujTyumyHByiiElBy2rA4gysBkLv_pJnpRObk6_vYL9mCKcnZrQ79IzfUWeXjUAFjwQM9Nfn-R1RqAkTjhfhAv3c9dJF_EB77ytOLdvwulDC0FqChXdMmITkD2bKVOZ0Xa1VlROjOf4uaaZO0b7hZTLaop-9zoJfF3NmLLnenTzbT0S8lHZwveSi07hdrrj9x2crrPdg-n&lib=MNrndgbqK3JMB40L7Qz6VuSm4-IgYx82c"
+        method="POST"
+        target="hidden_iframe"
+        style="display:none;">
+    <input type="hidden" name="name" id="solverNameInput" />
+  </form>
+  <iframe name="hidden_iframe"></iframe>
+
   <div class="container">
-    <h2>帮助请求表单 Help Request Form</h2>
+    <h2>帮助请求表单 / Help Request Form</h2>
 
-    <label for="idTag">你的ID标签 Your ID Tag:</label>
-    <input type="text" id="idTag" placeholder="请输入你的ID，例如 ZX27 / Enter your ID (e.g. ZX27)" />
+    <label for="idTag">你的ID标签 / Your ID Tag:</label>
+    <input type="text" id="idTag" maxlength="20" placeholder="请输入您的ID，例如 ZX27 / Enter ID (e.g. ZX27)" />
 
-    <label for="subject">主题 Subject:</label>
-    <input type="text" id="subject" placeholder="简要主题 / Brief subject" />
+    <label for="subject">主题 / Subject:</label>
+    <input type="text" id="subject" maxlength="40" placeholder="简要主题 / Brief subject" />
 
-    <label for="reason">发生了什么？What’s going on?</label>
-    <textarea id="reason" rows="5" placeholder="描述问题... / Describe the issue..."></textarea>
+    <label for="reason">发生了什么？/ What’s going on?</label>
+    <textarea id="reason" rows="3" maxlength="200" placeholder="描述问题... / Describe the issue..."></textarea>
 
-    <button onclick="sendMessage()">发送 Telegram / Send </button>
+    <div class="button-group">
+      <button type="button" onclick="sendMessage()">📩 发送 / Send</button>
+      <button type="button" onclick="markSolved()">✅ 已解决 / Solved</button>
+    </div>
   </div>
 
-  <script>
-    function sendMessage() {
-      const idTag = document.getElementById('idTag').value.trim();
-      const subject = document.getElementById('subject').value.trim();
-      const reason = document.getElementById('reason').value.trim();
+  <div class="leaderboard-container" id="leaderboard">
+    <h3>🏆 解决问题排行榜 / Leaderboard</h3>
+    <ul id="leaderboardList">加载中... / Loading...</ul>
+  </div>
 
-      if (!idTag || !subject || !reason) {
-        alert('请填写所有字段 Please fill in all fields.');
-        return;
-      }
+  <div class="footer">Designed by Abhi </div>
 
-      const message = `🆘 *新帮助请求 New Help Request*\n\n🆔 *ID标签 ID Tag:* ${idTag}\n📌 *主题 Subject:* ${subject}\n📝 *原因 Reason:* ${reason}`;
+ <script>
+const telegramToken = '7200618609:AAFknpgD8aje4QQqwpLMpsTFLjfz4Wjm2dc';
+const chatId        = '-1002897706533';
+const apiBase       = 'https://script.google.com/macros/s/AKfycbxvFat1k4WtbQ3sT6OEembMk_mGwv8yI0OPPhptpofE6OFxrSy-w4JrLS2dA9H-pkL-DA/exec';
 
-      const token = '7174977604:AAG0ndAhWyS0xleVYvFAHWcZsq9lDNHtPTE'; // Replace with your Bot Token
-      const chatId = '-1002844604699'; // Replace with your Chat ID
-      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+function markSolved() {
+  const messageId = localStorage.getItem('lastMessageId');
+  if (!messageId) return alert('尚无请求可标记 / No request to mark.');
 
-      fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: message,
-          parse_mode: 'Markdown'
-        })
-      })
-      .then(res => {
-        if (res.ok) {
-          alert('消息发送成功！Message sent successfully!');
-          document.getElementById('idTag').value = '';
-          document.getElementById('subject').value = '';
-          document.getElementById('reason').value = '';
-        } else {
-          alert('消息发送失败 Failed to send message.');
-        }
-      })
-      .catch(() => alert('消息发送失败 Failed to send message.'));
+  const solvers = ["Abhi", "Amiru", "Amos", "Bilal", "Chillz", "Lisa", "Namrata", "Sasha"];
+  const choice = prompt('谁解决了此问题？ / Who solved this?\n' + solvers.map((n, i) => `${i + 1}. ${n}`).join("\n"));
+  const idx = parseInt(choice);
+
+  if (!idx || idx < 1 || idx > solvers.length) return alert('选择无效 / Invalid selection.');
+
+  const name = solvers[idx - 1];
+
+  // Telegram update
+  fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: `✅ Solved by ${name}`,
+      parse_mode: 'Markdown',
+      reply_to_message_id: messageId
+    })
+  });
+
+  // Google Sheets update
+  fetch(apiBase, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  });
+
+  setTimeout(loadLeaderboard, 1200);
+}
+
+function sendMessage() {
+  const idTag   = document.getElementById('idTag').value.trim();
+  const subject = document.getElementById('subject').value.trim();
+  const reason  = document.getElementById('reason').value.trim();
+  if (!idTag || !subject || !reason) {
+    return alert('请填写所有字段 / Please fill in all fields.');
+  }
+  const text = `🆘 *新帮助请求 New Help Request*\n\n🆔 ID标签: ${idTag}\n📌 Subject: ${subject}\n📝 Reason: ${reason}`;
+  fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.ok) {
+      localStorage.setItem('lastMessageId', data.result.message_id);
+      alert('消息已发送！Message sent!');
+      document.getElementById('idTag').value = '';
+      document.getElementById('subject').value = '';
+      document.getElementById('reason').value = '';
+    } else {
+      alert('发送失败 / Failed to send message.');
     }
-  </script>
+  })
+  .catch(() => alert('发送失败 / Failed to send message.'));
+}
+
+function loadLeaderboard() {
+  fetch(apiBase)
+    .then(res => res.json())
+    .then(data => {
+      const ul = document.getElementById('leaderboardList');
+      ul.innerHTML = '';
+      data.sort((a,b) => b[1] - a[1]);
+      data.forEach(row => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="star">⭐</span>
+  <span class="name">${row[0]}</span>
+  <span class="score">${row[1]}</span>`;
+        ul.appendChild(li);
+      });
+    })
+    .catch(() => document.getElementById('leaderboardList').textContent = '加载失败 / Load failed');
+}
+
+window.onload = loadLeaderboard;
+
+</script>
+
 </body>
 </html>
