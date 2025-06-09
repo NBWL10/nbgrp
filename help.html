@@ -143,9 +143,53 @@ iframe[name="hidden_iframe"] {
   display: none;
 }
 
+.notice-banner {
+  width: 100vw;
+  overflow: hidden;
+  background: linear-gradient(90deg, #fef9c3 0%, #f1f5f9 100%);
+  border-bottom: 1.5px solid #fde68a;
+  box-shadow: 0 3px 14px rgba(255,222,89,0.10);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+.notice-banner-content {
+  display: inline-block;
+  white-space: nowrap;
+  color: #b45309;
+  font-size: 15.5px;
+  font-weight: 500;
+  padding-left: 100vw;
+  /* Make the animation slower and smoother */
+  animation: slide-banner 32s linear infinite;
+  letter-spacing: 0.12px;
+}
+
+@keyframes slide-banner {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-110%); }
+}
+
+/* Push the rest of the page down so it's not hidden behind the fixed banner */
+body {
+  padding-top: 48px !important;
+}
+
+
   </style>
 </head>
 <body>
+<!-- Sliding Warning Banner -->
+<div class="notice-banner">
+  <div class="notice-banner-content">
+    <strong>Attention:</strong> For your security and the integrity of our team, all requests are tracked with your ID, IP, and the time submitted. Misuse or false reports will be taken seriously and could result in restricted access.
+  </div>
+</div>
 
   <!-- Hidden form for Google Sheets (Solved only) -->
   <form id="solverForm"
@@ -182,16 +226,22 @@ iframe[name="hidden_iframe"] {
 
   <div class="footer">Designed by Abhi </div>
 
- <script>
+<script>
 const telegramToken = '7200618609:AAFknpgD8aje4QQqwpLMpsTFLjfz4Wjm2dc';
 const chatId        = '-1002897706533';
 const apiBase       = 'https://script.google.com/macros/s/AKfycbxvFat1k4WtbQ3sT6OEembMk_mGwv8yI0OPPhptpofE6OFxrSy-w4JrLS2dA9H-pkL-DA/exec';
+
+// ID tag validation function
+function isValidIdTag(idTag) {
+  // Only ZX01-ZX99, WL01-WL99, HX01-HX99 (case-insensitive)
+  return /^(ZX|WL|HX)(0[1-9]|[1-9][0-9])$/i.test(idTag.trim());
+}
 
 function markSolved() {
   const messageId = localStorage.getItem('lastMessageId');
   if (!messageId) return alert('尚无请求可标记 / No request to mark.');
 
-  const solvers = ["Abhi", "Amiru", "Amos", "Bilal", "Chillz", "Lisa", "Namrata", "Sasha"];
+  const solvers = ["Abhi", "Amiru", "Amos", "Bilal", "Chillz", "Lisa", "Namrata", "Bright", "Sasha"];
   const choice = prompt('谁解决了此问题？ / Who solved this?\n' + solvers.map((n, i) => `${i + 1}. ${n}`).join("\n"));
   const idx = parseInt(choice);
 
@@ -220,7 +270,10 @@ function markSolved() {
   });
 
   setTimeout(loadLeaderboard, 1200);
+  // Disable further solving from this browser for this request
+  localStorage.removeItem('lastMessageId');
 }
+
 
 function sendMessage() {
   const idTag   = document.getElementById('idTag').value.trim();
@@ -229,25 +282,39 @@ function sendMessage() {
   if (!idTag || !subject || !reason) {
     return alert('请填写所有字段 / Please fill in all fields.');
   }
-  const text = `🆘 *新帮助请求 New Help Request*\n\n🆔 ID标签: ${idTag}\n📌 Subject: ${subject}\n📝 Reason: ${reason}`;
-  fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.ok) {
-      localStorage.setItem('lastMessageId', data.result.message_id);
-      alert('消息已发送！Message sent!');
-      document.getElementById('idTag').value = '';
-      document.getElementById('subject').value = '';
-      document.getElementById('reason').value = '';
-    } else {
-      alert('发送失败 / Failed to send message.');
-    }
-  })
-  .catch(() => alert('发送失败 / Failed to send message.'));
+  // ID validation check
+  if (!isValidIdTag(idTag)) {
+    return alert('请输入有效的ID标签 (如 ZX01, WL15, HX99) / Please enter a valid ID Tag (e.g. ZX01, WL15, HX99).');
+  }
+
+  // Get IP address and current time, then send
+  fetch('https://api.ipify.org?format=json')
+    .then(response => response.json())
+    .then(data => {
+      const ip = data.ip;
+      const now = new Date();
+      const timeString = now.toLocaleString('zh-CN', { hour12: false }) + ` (${Intl.DateTimeFormat().resolvedOptions().timeZone})`;
+      const text = `🆘 *新帮助请求 New Help Request*\n\n🆔 ID标签: ${idTag}\n📌 Subject: ${subject}\n📝 Reason: ${reason}\n🌐 IP: ${ip}\n⏰ Time: ${timeString}`;
+      fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) {
+          localStorage.setItem('lastMessageId', data.result.message_id);
+          alert('消息已发送！Message sent!');
+          document.getElementById('idTag').value = '';
+          document.getElementById('subject').value = '';
+          document.getElementById('reason').value = '';
+        } else {
+          alert('发送失败 / Failed to send message.');
+        }
+      })
+      .catch(() => alert('发送失败 / Failed to send message.'));
+    })
+    .catch(() => alert('无法获取IP地址 / Failed to get IP address.'));
 }
 
 function loadLeaderboard() {
@@ -271,6 +338,8 @@ function loadLeaderboard() {
 window.onload = loadLeaderboard;
 
 </script>
+
+
 
 </body>
 </html>
