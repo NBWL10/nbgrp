@@ -104,8 +104,8 @@
     <button class="tool-button" onclick="loadTool('https://nbgrp.onrender.com/')">Socks5 Checker</button>
     
     <!-- Tool 3 with dropdown -->
-        <button class="tool-button" onclick="loadTool('dynamic/dynamic.html')">Dynamic IP</button>
-<details style="position: relative;">
+    <button class="tool-button" onclick="loadTool('final_with_dynamic.html')">Dynamic IP</button>
+    <details style="position: relative;">
       <summary class="tool-button dropdown-summary">Wallets</summary>
       <div style="
           position: absolute;
@@ -136,6 +136,12 @@
 
   <script>
     function loadTool(page) {
+      const isExternal = page.startsWith('http') && !page.includes(location.hostname);
+      if (isExternal) {
+        window.open(page, '_blank');
+        return;
+      }
+
       const iframe = document.getElementById('tool-frame');
       const placeholder = document.getElementById('placeholder');
       iframe.src = page + (page.includes('?') ? '&' : '?') + 'v=' + new Date().getTime();
