@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini Browser — Paste a URL</title>
+  <style>
+    :root{--bar:#0f1724;--btn:#1f2937;--accent:#2563eb;--bg:#0b1220;--text:#e6eef8}
+    html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,system-ui,-apple-system,Helvetica,Arial}
+    body{display:flex;flex-direction:column;background:linear-gradient(180deg,#061022 0%, #071426 100%);color:var(--text)}
+    .toolbar{display:flex;gap:8px;align-items:center;padding:10px;background:var(--bar);box-shadow:0 2px 10px rgba(2,6,23,.6)}
+    .controls{display:flex;gap:6px}
+    button{background:var(--btn);border:0;color:var(--text);padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:600}
+    button.icon{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;padding:0}
+    button:hover{filter:brightness(1.07)}
+    input[type=text]{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:var(--text);outline:none;font-size:15px}
+    .right-actions{display:flex;gap:8px}
+    iframe{flex:1;border:0;height:calc(100vh - 72px);background:white}
+    .status{font-size:12px;color:rgba(255,255,255,0.6);margin-left:8px}
+    .small{font-size:12px;padding:6px 8px}
+    .warning{color:#ffb86b}
+    /* responsive */
+    @media (max-width:600px){.toolbar{flex-wrap:wrap}.controls{width:100%}.right-actions{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div class="controls">
+      <button id="back" class="icon" title="Back">◀</button>
+      <button id="forward" class="icon" title="Forward">▶</button>
+      <button id="reload" class="icon" title="Reload">⟳</button>
+      <button id="home" class="icon" title="Home">🏠</button>
+    </div>
+
+    <input id="urlInput" type="text" placeholder="Enter a URL (example: https://example.com)" spellcheck="false" autocomplete="off" />
+
+    <div class="right-actions">
+      <button id="go">Open</button>
+      <button id="openNew" title="Open in native tab">↗</button>
+      <div class="status" id="info">Ready</div>
+    </div>
+  </div>
+
+  <iframe id="view" sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
+
+  <script>
+    // Mini-browser logic
+    const urlInput = document.getElementById('urlInput');
+    const view = document.getElementById('view');
+    const info = document.getElementById('info');
+
+    // Simple history managed in parent (doesn't rely on iframe's internal history for cross-origin)
+    const historyStack = [];
+    let historyIndex = -1;
+
+    function normalize(u){
+      if(!u) return '';
+      u = u.trim();
+      // allow data: and blob: if supported
+      if(/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(u)) return u; // already has scheme
+      return 'https://' + u;
+    }
+
+    function setInfo(t){ info.textContent = t || '' }
+
+    function loadURL(raw, push=true){
+      const u = normalize(raw);
+      if(!u) return;
+      try{
+        // update iframe src
+        view.src = u;
+        urlInput.value = u;
+        setInfo('Loading: ' + u);
+        if(push){
+          // truncate forward history
+          historyStack.splice(historyIndex+1);
+          historyStack.push(u);
+          historyIndex = historyStack.length - 1;
+        }
+        updateButtons();
+      }catch(e){
+        setInfo('Failed to load');
+      }
+    }
+
+    // navigation buttons
+    function goBack(){ if(historyIndex>0){ historyIndex--; loadURL(historyStack[historyIndex], false); updateButtons(); }}
+    function goForward(){ if(historyIndex < historyStack.length -1){ historyIndex++; loadURL(historyStack[historyIndex], false); updateButtons(); }}
+    function reload(){ if(historyIndex >=0) { loadURL(historyStack[historyIndex], false); } else if(urlInput.value) { loadURL(urlInput.value, true); }}
+    function goHome(){ loadURL('about:blank'); }
+
+    function updateButtons(){
+      document.getElementById('back').disabled = historyIndex <= 0;
+      document.getElementById('forward').disabled = historyIndex >= historyStack.length -1;
+    }
+
+    // events
+    document.getElementById('go').addEventListener('click', ()=> loadURL(urlInput.value, true));
+    document.getElementById('openNew').addEventListener('click', ()=> {
+      const u = normalize(urlInput.value || historyStack[historyIndex] || '');
+      if(u) window.open(u, '_blank');
+    });
+
+    document.getElementById('back').addEventListener('click', goBack);
+    document.getElementById('forward').addEventListener('click', goForward);
+    document.getElementById('reload').addEventListener('click', reload);
+    document.getElementById('home').addEventListener('click', ()=>{ loadURL('about:blank'); historyStack.length = 0; historyIndex = -1; updateButtons(); setInfo('Home'); });
+
+    // keyboard: Enter to go, Alt+Left/Right for nav
+    urlInput.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') loadURL(urlInput.value, true);
+      if(e.altKey && e.key === 'ArrowLeft') goBack();
+      if(e.altKey && e.key === 'ArrowRight') goForward();
+    });
+
+    // iframe events (limited for cross-origin)
+    view.addEventListener('load', ()=>{
+      try{
+        // Try to read iframe location (works only if same-origin)
+        const loc = view.contentWindow && view.contentWindow.location && view.contentWindow.location.href;
+        if(loc) { urlInput.value = loc; }
+      }catch(e){}
+      setInfo('Loaded');
+    });
+
+    // convenience: paste a URL into the page (support apps that only allow URLs)
+    // If page is opened with a URL parameter like ?u=https%3A%2F%2Fexample.com, auto-load it
+    (function checkQuery(){
+      try{
+        const params = new URLSearchParams(location.search);
+        if(params.has('u')){
+          loadURL(params.get('u'));
+        }
+      }catch(e){}
+    })();
+
+    // small UX touch: show note when iframe blocked by X-Frame-Options
+    view.addEventListener('error', ()=>{
+      setInfo('Frame load error — site may block embedding (X-Frame-Options/CSP)');
+    });
+
+    // initial state
+    updateButtons();
+    setInfo('Ready — paste a URL and click Open');
+  </script>
+</body>
+</html>
